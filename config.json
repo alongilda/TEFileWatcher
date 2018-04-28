@@ -1,0 +1,5 @@
+{
+    "inFolder": "./in",
+    "outFolder": "./out",
+    "serverIP": "localhost:1234"
+}
