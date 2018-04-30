@@ -1,21 +1,21 @@
 // We need this to build our post string
-var querystring = require('querystring');
-var http = require('http');
-var fs = require('fs');
+const querystring = require('querystring');
+const http = require('http');
+const fs = require('fs');
 const FormData = require('form-data');
-var {parseLikeNTE, insertToDb, format} = require('./dixiUtils.js');
+const path = require('path');
 
-// console.log(format)
+
 
 function PostFile(filename, cb) {
     try {
 
         // The request is send via the url
         request_metadata = {
-            category: "TELEVISION",
-            domain: "HEB_GEN",
+            category: "television",
+            domain: "heb_gen",
             sample_rate: "16000",
-            notify_url: "null"
+            notify_url: null
         }
     
         var uri_data = querystring.stringify({
@@ -27,8 +27,8 @@ function PostFile(filename, cb) {
         form.append('file', fs.createReadStream(filename));
     
         var post_options = {
-            host: '81.199.122.95',
-            port: '8082',
+            host: global.config.serverIP,
+            port: global.config.serverPort,
             path: '/speechboard_web_batch/rest/request/upload?' + uri_data,
             method: 'POST',
             headers: form.getHeaders()
@@ -49,7 +49,6 @@ function PostFile(filename, cb) {
             res.on('end', () => {
                 var body = Buffer.concat(fullData).toString('utf-8');
                 cb(null, body)
-                console.log("End upload");
             });
         });
     }
@@ -60,7 +59,7 @@ function PostFile(filename, cb) {
 
 }
 
-// Get request looks like this
+// Get request looks like thiscd
 // http://hostname:8082/speechboard_web_batch/rest/request/result?request={"id":"1","format":"JSON"}
 // only with the json converted to url like
 
@@ -76,8 +75,8 @@ function GetFile(id, cb) {
     // console.log(get_data);
 
     var options = {
-        host: '81.199.122.95',
-        port: '8082',
+        host: global.config.serverIP,
+        port: global.config.serverPort,
         path: '/speechboard_web_batch/rest/request/result?' + get_data
     };
 
@@ -104,6 +103,32 @@ function GetFile(id, cb) {
     });
 }
 
+function getPlainText(wordarr) {
+    try {
+        return (null, wordarr.map(val => val.word).join(" "));
+    }
+    
+    catch (e) {
+        return (e, null)
+    }
+}
+
+function getOutFileName(filename) {
+    return path.join(global.config.outFolder, path.basename(filename, path.extname(filename)) + ".txt")
+}
+
+function finalizeFile(filename, txt) {
+    try {
+        var outFileName = getOutFileName(filename)
+        fs.writeFileSync(outFileName, txt);
+
+        return null
+    }
+
+    catch (e) {
+        return e
+    }
+}
 
 function getWordArr(res) {
     try {
@@ -178,14 +203,18 @@ function queryResult(id, cb) {
 
 // Main function
 function upload(filename, EasyOrder, order) {
+    console.log("Starting upload with file", filename);
     PostFile(filename, (err, id) => {
         if (err) {
-            console.log("[dixiUpload - upload] - PostFile err", err)
+            console.error("[dixiUpload - upload] - PostFile err", err)
             return
         }
+
+        console.log("Starting to query result with id", id, filename);
         
         queryResult(id, (err, res) => {
-            // console.log("This is err res", err, res);
+            console.log("Succesfully queried result with id", id, filename);
+
             if (err) {
                 console.log("[dixiUpload - upload] - queryResult err", err)
                 return
@@ -193,21 +222,25 @@ function upload(filename, EasyOrder, order) {
 
             var err, warr = getWordArr(body);
             if (err) {
-                console.log("[dixiUpload - upload] - getWordArr err", err)
+                console.error("[dixiUpload - upload] - getWordArr err", err)
                 return
             }
 
-            
-            // console.log("this is err, warr", warr)
-            parsedLikeNTE = parseLikeNTE({words: warr});
-
-            var err, ok = insertToDb(EasyOrder, parsedLikeNTE, order)
+            var err, plainText = getPlainText(warr)
             if (err) {
-                console.log("[dixiUpload - upload] - getWordArr err", err)
+                console.error("[dixiUpload - upload] - getPlainText err", err)
                 return
             }
 
-            console.log("Finished inserting into db");
+            var err = finalizeFile(filename, plainText)
+            if (err) {
+                console.log("[dixiUpload - upload] - getPlainText err", err)
+                return
+            }
+
+            console.log("Finished succesufly for file", filename);
+
+
         })
 
     });

@@ -1,0 +1,29 @@
+{
+  "name": "tefilewatcher",
+  "version": "1.0.0",
+  "description": "Llol",
+  "main": "app.js",
+  "dependencies": {
+    "chokidar": "^2.0.3",
+    "express": "^4.16.3",
+    "form-data": "^2.3.2",
+    "nodemon": "^1.17.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alongilda/TEFileWatcher.git"
+  },
+  "keywords": [
+    "oi"
+  ],
+  "author": "Alon!",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alongilda/TEFileWatcher/issues"
+  },
+  "homepage": "https://github.com/alongilda/TEFileWatcher#readme"
+}

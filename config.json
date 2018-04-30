@@ -1,5 +1,7 @@
 {
     "inFolder": "./in",
     "outFolder": "./out",
-    "serverIP": "localhost:1234"
+    "serverIP": "81.199.122.95",
+    "serverPort": "8082",
+    "ignoreInitial": true
 }
