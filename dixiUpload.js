@@ -72,8 +72,6 @@ function GetFile(id, cb) {
         })
     })
 
-    // console.log(get_data);
-
     var options = {
         host: global.config.serverIP,
         port: global.config.serverPort,
@@ -99,7 +97,7 @@ function GetFile(id, cb) {
     });
 
     req.on('error', function (e) {
-        console.log('ERROR: ' + e.message);
+        global.logger.error('ERROR: ' + e.stack);
     });
 }
 
@@ -170,7 +168,6 @@ function queryResult(id, cb) {
 
         GetFile(id, (err, res) => {
             if (err) {
-                // console.log("This is err", err)
                 cb(err, null)
                 return
             }
@@ -203,42 +200,42 @@ function queryResult(id, cb) {
 
 // Main function
 function upload(filename, EasyOrder, order) {
-    console.log("Starting upload with file", filename);
+    global.logger.info("Starting upload with file " + filename);
     PostFile(filename, (err, id) => {
         if (err) {
-            console.error("[dixiUpload - upload] - PostFile err", err)
+            global.logger.error("[dixiUpload - upload] - PostFile err " + err.stack)
             return
         }
 
-        console.log("Starting to query result with id", id, filename);
+        global.logger.info("Starting to query result with id " + id + filename);
         
         queryResult(id, (err, res) => {
-            console.log("Succesfully queried result with id", id, filename);
+            global.logger.info("Succesfully queried result with id " + id + filename);
 
             if (err) {
-                console.log("[dixiUpload - upload] - queryResult err", err)
+                global.logger.error("[dixiUpload - upload] - queryResult err " + err.stack)
                 return
             }
 
             var err, warr = getWordArr(body);
             if (err) {
-                console.error("[dixiUpload - upload] - getWordArr err", err)
+                global.logger.error("[dixiUpload - upload] - getWordArr err " + err.stack)
                 return
             }
 
             var err, plainText = getPlainText(warr)
             if (err) {
-                console.error("[dixiUpload - upload] - getPlainText err", err)
+                global.logger.error("[dixiUpload - upload] - getPlainText err" + err.stack)
                 return
             }
 
             var err = finalizeFile(filename, plainText)
             if (err) {
-                console.log("[dixiUpload - upload] - getPlainText err", err)
+                global.logger.error("[dixiUpload - upload] - getPlainText err " +  err)
                 return
             }
 
-            console.log("Finished succesufly for file", filename);
+            global.logger.info("Finished succesufly for file " + filename);
 
 
         })

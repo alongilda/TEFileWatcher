@@ -2,10 +2,21 @@ const express = require('express');
 const fs = require('fs');
 const chokidar = require('chokidar');
 const dixiUpload = require('./dixiUpload');
+const winston = require('winston');
+
+global.logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.json(),
+    transports: [
+        new winston.transports.File({ filename: 'app.log' }),
+        new winston.transports.Console({ format: winston.format.simple() })
+    ]
+});
+
 
 global.config = require("./config.json");
 
-console.log("Starting with config:\n", global.config);
+global.logger.info("Starting with config: " + JSON.stringify(global.config));
 
 // Listener on some folder..
 var watcher = chokidar.watch(global.config.inFolder, {
@@ -16,5 +27,5 @@ watcher
         dixiUpload.dixiUpload(filename);
     })
     .on('error', err => {
-        console.error("Watcher err", err);
+        global.logger.error("Watcher err", err.stack);
     })
