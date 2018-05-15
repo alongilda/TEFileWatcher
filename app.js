@@ -24,7 +24,10 @@ var watcher = chokidar.watch(global.config.inFolder, {
 })
 watcher
     .on('add', filename => {
-        dixiUpload.dixiUpload(filename);
+        setTimeout(() => {
+            dixiUpload.dixiUpload(filename);
+        }, 1000)
+        
     })
     .on('error', err => {
         global.logger.error("Watcher err", err.stack);
